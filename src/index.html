@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Distance Calculator</title>
+  <script type="module" src="./main.js"></script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDM4qvcpE5PcWBLJRHkt6NnMaL5gXUzFFQ&libraries=places"></script>
+
+  <script>
+    var geocoder
+    // init autocomplete widget
+    function initAutocomplete () {
+      const autocompleteInputA = document.getElementById('pointA_address')
+      const autocompleteInputB = document.getElementById('pointB_address')
+      const options = {
+        types: ["address"],
+      }
+      // create autocomplete object
+      const autocompleteA = new google.maps.places.Autocomplete(autocompleteInputA, options)
+      const autocompleteB = new google.maps.places.Autocomplete(autocompleteInputB, options)
+
+      geocoder = new google.maps.Geocoder();;
+
+      document.getElementById('btnA').addEventListener('click', function () {
+        const address = document.getElementById('pointA_address').value
+        if (address == '') {
+          alert("Please Input Address of PointA")
+          return
+        }
+        codeAddress(address, 'pointA')
+      })
+
+      document.getElementById('btnB').addEventListener('click', function () {
+        const address = document.getElementById('pointB_address').value
+        if (address == '') {
+          alert("Please Input Address of PointB")
+          return
+        }
+        codeAddress(address, 'pointB')
+      })
+    }
+
+    // tranfer address to coordinate address.
+    async function codeAddress (address, inputId) {
+
+      await geocoder.geocode({ 'address': address }, function (results, status) {
+        if (status == 'OK') {
+          lat = results[0].geometry.location.lat()
+          lng = results[0].geometry.location.lng()
+          document.getElementById(inputId).value = lat + "," + lng
+        } else {
+          alert('Geocode was not successful for the following reason: ' + status)
+        }
+      })
+    }
+
+    // calculate the address
+    function calculateDistance () {
+
+      const pointA = document.getElementById('pointA').value
+      const pointB = document.getElementById('pointB').value
+
+      if (pointA == '' || pointB == '') {
+        alert("Don't forget to transfer address into coordinate value!")
+        return
+      }
+
+      const arrA = pointA.split(',')
+      latA = parseFloat(arrA[0])
+      lngA = parseFloat(arrA[1])
+      console.log(latA, lngA)
+
+      const arrB = pointB.split(',')
+      latB = parseFloat(arrB[0])
+      lngB = parseFloat(arrB[1])
+      console.log(latB, lngB)
+
+      var radLatA = latA * Math.PI / 180.0
+      var radLatB = latB * Math.PI / 180.0
+      var a = radLatA - radLatB
+      var b = lngA * Math.PI / 180.0 - lngB * Math.PI / 180.0
+      var s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
+        Math.cos(radLatA) * Math.cos(radLatB) * Math.pow(Math.sin(b / 2), 2)))
+      s = s * 6378.137// EARTH_RADIUS;
+      s = Math.round(s * 10000) / 10000
+      alert("Distance: " + s + "km")
+    }
+  </script>
+</head>
+
+<body onload="initAutocomplete ()">
+  <div class="container py-4 px-3 mx-auto">
+    <h1>Distance Calculator</h1>
+    <label>Point A:</label>
+
+    <label>(User address):</label>
+    <input class="autocomplete" type="text" id="pointA_address" placeholder="e.g. 1870 N Scott St...">
+    <button id="btnA" class="btn btn-primary">transfer</button>
+
+    <label>(User's Latitude, Longitude):</label>
+    <input type="text" id="pointA" placeholder="e.g., 40.7128, -74.0060" disabled="disabled">
+    <br>
+
+    <label>Point B:</label>
+
+    <label>(User address):</label>
+    <input class="autocomplete" type="text" id="pointB_address" placeholder="e.g. 1870 N Scott St...">
+    <button id="btnB" class="btn btn-primary">transfer</button>
+
+    <label>(User's Latitude, Longitude):</label>
+    <input type="text" id="pointB" placeholder="e.g., 40.7128, -74.0060" disabled="disabled">
+    <br>
+    <button onclick="calculateDistance()" class="btn btn-primary">Calculate</button>
+    <p id="distanceResult"></p>
+  </div>
+</body>
+
+</html>
